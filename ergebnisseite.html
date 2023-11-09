@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergebnisse</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Ergebnisse</h1>
+
+    <button onclick="goToCalculator()">Zurück zum Rechner</button>
+
+    <!-- Tabelle für die Ergebnisse -->
+    <table border="1" id="resultsTable"></table>
+
+    <!-- Button zum Löschen einzelner Datensätze -->
+    <button style="background-color: red; color: white;" onclick="deleteData()">Löschen</button>
+
+    <div id="chart"></div>
+
+    <script>
+        if (!localStorage.getItem('userData')) {
+            localStorage.setItem('userData', JSON.stringify([]));
+        }
+
+        function goToCalculator() {
+            window.location.href = "index.html";
+        }
+
+        function deleteData() {
+            var savedData = JSON.parse(localStorage.getItem('userData'));
+            var indexToDelete = 0;
+
+            if (indexToDelete >= 0 && indexToDelete < savedData.length) {
+                savedData.splice(indexToDelete, 1);
+                localStorage.setItem('userData', JSON.stringify(savedData));
+                updateTable();
+                updateChart();
+                alert("Datensatz wurde gelöscht!");
+            } else {
+                alert("Datensatz konnte nicht gefunden werden.");
+            }
+        }
+
+        function updateTable() {
+            var savedData = JSON.parse(localStorage.getItem('userData')) || [];
+            var tableContent = '<tr><th>Name</th><th>Gerätename</th><th>Kilowattstunden</th><th>Gesamtpreis (Euro)</th></tr>';
+
+            for (var i = 0; i < savedData.length; i++) {
+                tableContent += '<tr>';
+                tableContent += '<td>' + savedData[i].name + '</td>';
+                tableContent += '<td>' + savedData[i].device + '</td>';
+                tableContent += '<td>' + savedData[i].kwh + ' kWh</td>';
+                tableContent += '<td>' + savedData[i].totalPrice + ' Euro</td>';
+                tableContent += '</tr>';
+            }
+
+            document.getElementById('resultsTable').innerHTML = tableContent;
+        }
+
+        function updateChart() {
+            var savedData = JSON.parse(localStorage.getItem('userData')) || [];
+            var names = savedData.map(function(item) {
+                return item.name;
+            });
+
+            var kwhValues = savedData.map(function(item) {
+                return parseFloat(item.kwh);
+            });
+
+            var data = [{
+                x: names,
+                y: kwhValues,
+                type: 'bar'
+            }];
+
+            var layout = {
+                title: 'KWh Verbrauch pro Person',
+                xaxis: {
+                    title: 'Namen'
+                },
+                yaxis: {
+                    title: 'Kilowattstunden'
+                }
+            };
+
+            Plotly.newPlot('chart', data, layout);
+        }
+
+        updateTable();
+        updateChart();
+    </script>
+</body>
+</html>
